@@ -2,7 +2,7 @@
 This repository contains the code and data used for the work entitled "Fast Identification of Reactions with Desired Barriers by Reformulating the Use of Machine Learning for Activation Energies". The "random", "local_search" and "supervised" directories contain, respectively, the files for the random search, local search and supervised learning algorithms as described in the paper.
 
 ## Python version and libraries
-This code was tested using Python version 3.7.12 and the python libraries numpy, scikit-learn, pandas and matplotlib (versions specified in requirements.txt).
+This code was tested using Python version 3.7.12 and the libraries numpy, scikit-learn, pandas and matplotlib (versions specified in requirements.txt). However, there should be little difficulty if using slightly different versions of either the dependencies or Python itself.
 
 ## random
 This folder contains six sub-directories, with each containing the data and results for the barrier data sets of the reactions: "e2_lccsd", "e2_mp2", "michael", "sn2_lccsd", "sn2_mp2" and "vaska". The files that are contained within each of these sub-directories are as follows:
