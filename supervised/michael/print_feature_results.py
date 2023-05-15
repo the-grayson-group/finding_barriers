@@ -1,9 +1,8 @@
 import os
-os.chdir("H:\\dos\\project4_structures\\michael")
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
-sys.path.insert(0, "H:\\dos\\project4_structures")
+sys.path.insert(0, "..")
 from feature_results import ma_feature_results
 
 colors = {10.0: ["C0", "#113956"], 20.0: ["C1", "#b25503"], 30.0: ["C2", "#186618"], 40.0: ["C3", "#871616"], 50.0: ["C4", "#49266b"]}
