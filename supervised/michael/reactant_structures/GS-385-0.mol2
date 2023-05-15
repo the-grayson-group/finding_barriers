@@ -1,0 +1,24 @@
+@<TRIPOS>MOLECULE
+GS-385-0.out
+ 8 7 0 0 0
+SMALL
+MULLIKEN_CHARGES
+****
+Gaussian 16 # wB97XD def2tzvp, opt=(calcfc, maxcycles=70, maxstep=8), freq=noraman
+@<TRIPOS>ATOM
+      1 C          -0.1712    0.1121    0.0000 C.2     1  UNL1       -0.0483
+      2 C          -0.3531    1.5779    0.0000 C.2     1  UNL1        0.1376
+      3 O           0.5528    2.3703   -0.0000 O.2     1  UNL1       -0.3429
+      4 C          -1.1644   -0.7755    0.0000 C.2     1  UNL1       -0.0213
+      5 H          -0.9868   -1.8414   -0.0000 H       1  UNL1        0.2069
+      6 CL         -2.8304   -0.3684   -0.0000 Cl      1  UNL1       -0.0311
+      7 BR          1.6062   -0.5214   -0.0000 Br      1  UNL1       -0.0321
+      8 H          -1.4033    1.9057    0.0000 H       1  UNL1        0.1312
+@<TRIPOS>BOND
+     1     1     2    1
+     2     1     4    2
+     3     1     7    1
+     4     2     3    2
+     5     2     8    1
+     6     4     5    1
+     7     4     6    1
