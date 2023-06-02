@@ -1,5 +1,5 @@
 # finding_barriers
-This repository contains the code and data used for the work entitled "Reformulating Reaction Barrier Prediction for Data-Efficient Machine Learning". The "random", "local_search" and "supervised" directories contain, respectively, the files for the random search, local search and supervised learning algorithms as described in the paper.
+This repository contains the code and data used for the work entitled "Reformulating Reactivity Design for Data-Efficient Machine Learning". The "random", "local_search" and "supervised" directories contain, respectively, the files for the random search, local search and supervised learning algorithms as described in the paper.
 
 ## Python version and libraries
 This code was tested using Python version 3.7.12 and the libraries numpy, scikit-learn, pandas, matplotlib and rdkit (versions specified in requirements.txt). However, there should be little difficulty if using slightly different versions of either the dependencies or Python itself.
