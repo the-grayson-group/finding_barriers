@@ -1,7 +1,12 @@
-import os
+"""
+Collects results for the local search.
+"""
+
 import sys
+import os
 sys.path.insert(0, '../')
 from finding_barriers import Barriers
+from Heuristic import Search_agent
 import numpy as np
 import pickle
 from multiprocessing import Process, Manager
@@ -17,17 +22,13 @@ def run_single(barriers, barrier, results_dict):
 
         np.random.seed(r)
         barriers.shuffle()
-
-        for ind in range(len(barriers.all_molecules_nosym)):
-
-            Y_known = barriers.all_barriers_nosym[:ind + 1] # Add new random barrier to search space.
-
-            if (np.abs(Y_known - barrier) < 1).any(): within_1_kmol = ind + 1; break
-
-        results.append(within_1_kmol)
+        agent = Search_agent(barriers)       
+        agent.find_barrier(barrier, 'local')
+        
+        results.append(len(agent.results))
 
     results_dict[barrier] = np.array(results)
-
+                    
 def run(data, file):
 
     # Avoiding using GPU because the multiprocessing doesn't work.
@@ -59,7 +60,7 @@ def run(data, file):
         for p in processes: p.start()
         for p in processes: p.join()
 
-    pickle.dump(dict(results_dict), open('{}/results_dict.txt'.format(file), "wb" ))
+    pickle.dump(dict(results_dict), open('{}/results_dict_local.txt'.format(file), "wb" ))
 
 if __name__ == "__main__":
 
@@ -67,3 +68,8 @@ if __name__ == "__main__":
     files = ['e2_lccsd', 'e2_mp2', 'michael', 'sn2_lccsd', 'sn2_mp2', 'vaska']
 
     [run(data, file) for data, file in zip(datas, files)]
+
+
+
+
+

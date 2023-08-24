@@ -1,28 +1,19 @@
 import csv
 import numpy as np
 from collections import defaultdict
+from itertools import product
+import regex as re
 
 class Barriers:
     """
     Deals with the barrier data, doubles as an environment
     """
     
-    def __init__(self, file, name, target_barrier, actions=0):
-
-        self.target_barrier = target_barrier # This is what we are trying to optimise towards
-
-        # Names of all the different datasets
-        self.names = ['barriers_groups', 
-                      'e2_barriers_groups_lccsd', 
-                      'e2_barriers_groups_mp2', 
-                      'sn2_barriers_groups_lccsd', 
-                      'sn2_barriers_groups_mp2',
-                      'vaska_barriers_groups']
+    def __init__(self, file, name):
         
         self.read(file, name)
-        self.choose_actions(actions)
-
-        self.target_state = self.molecules[np.abs(self.barriers - target_barrier).argmin()]
+        self.point_change()
+        self.transitions_point_change()
         
     def read(self, file, name):
         """
@@ -30,6 +21,7 @@ class Barriers:
         """
 
         # Read in the data
+        self.file = file
         with open(file + '/' + name + '.csv', 'r') as file:
 
             data = np.array(list(csv.reader(file))[1:], dtype='O')
@@ -40,10 +32,12 @@ class Barriers:
             self.barriers = data[:, 4].astype(float) * 627.503 # Scaling barriers
             self.molecules_str = data[:, 5:].astype('O')
 
-        elif name in self.names:
+        else:
 
             self.barriers = data[:, -1].astype(float)
             self.molecules_str = data[:, :-1].astype('O')
+
+        self.molecules_str = np.vectorize(lambda group_str : re.sub("\(?\[\*:\d\]\)?", "", group_str))(self.molecules_str)
 
         # Convert into numbers
         self.molecule_convert = defaultdict(lambda : len(self.molecule_convert))
@@ -61,7 +55,28 @@ class Barriers:
 
         # Available molecules in each index
         self.all = [np.unique(self.molecules[:, i]) for i in range(self.dim)]
-        self.all_n = [len(i) for i in self.all]      
+        self.all_n = [len(i) for i in self.all]
+
+        # Every possible molecule
+        self.all_molecules = np.array(list(product(*self.all)))
+        self.n_all_points = len(self.all_molecules)
+        self.all_barriers = np.array([self.barriers[(self.molecules == molecule).all(axis=1)][0] if (self.molecules == molecule).all(axis=1).any() else np.inf for molecule in self.all_molecules])
+        self.all_barriers = np.array([min(self.all_barriers[(self.all_molecules == molecule).all(axis=1)], 
+                                          self.all_barriers[(self.all_molecules == mkswp(molecule, file)).all(axis=1)]) 
+                                          for molecule in self.all_molecules])
+
+        # Removing symmetry
+        self.all_molecules_nosym = self.all_molecules[:1]
+        self.all_barriers_nosym = self.all_barriers[:1]
+
+        for molecule in self.all_molecules:
+
+            if not (molecule == self.all_molecules_nosym).all(axis=1).any() and not (mkswp(molecule, file) == self.all_molecules_nosym).all(axis=1).any():
+
+                self.all_molecules_nosym = np.append(self.all_molecules_nosym, [molecule], axis=0)
+                self.all_barriers_nosym = np.append(self.all_barriers_nosym, self.all_barriers[(self.all_molecules == molecule).all(axis=1)])
+
+        self.n_all_points_nosym = len(self.all_molecules_nosym)
 
     def shuffle(self):
         """
@@ -73,15 +88,13 @@ class Barriers:
         self.molecules = self.molecules[index]
         self.barriers = self.barriers[index]
 
-    def choose_actions(self, action_struc=0):
-        """
-        Changes the action structure that it currently being used.
-        """
+        index = np.random.choice(np.arange(self.n_all_points), self.n_all_points, replace=False)
+        self.all_molecules = self.all_molecules[index]
+        self.all_barriers = self.all_barriers[index]
 
-        if action_struc == 0:
-
-            self.point_change()
-            self.transitions_point_change()
+        index = np.random.choice(np.arange(self.n_all_points_nosym), self.n_all_points_nosym, replace=False)
+        self.all_molecules_nosym = self.all_molecules_nosym[index]
+        self.all_barriers_nosym = self.all_barriers_nosym[index]
 
     def point_change(self):
         """
@@ -104,22 +117,20 @@ class Barriers:
 
         self.trans = defaultdict(dict)
 
-        for state in self.molecules:
+        for state in self.all_molecules:
             for action, action_vec in self.action_dict.items():
 
                 # Take action, finding new state and reward
                 new_state = state.copy()
                 new_state[action_vec[0]] = action_vec[1]
+                new_energy = self.all_barriers[(self.all_molecules == new_state).all(axis=1)][0]
 
-                if (self.molecules == new_state).all(axis=1).any(): # For missing data points
+                self.trans[tuple(state)][action] = tuple([list(new_state), new_energy])
 
-                    new_energy = self.barriers[(self.molecules == new_state).all(axis=1)][0]
-                    self.trans[tuple(state)][action] = tuple([list(new_state), new_energy]) 
-        
-    def reset(self):
-        """
-        Resets the experiment.
-        Shuffles data and creates a new split
-        """
-        
-        self.shuffle()
+def mkswp(s, file): 
+    """
+    Returns the symmetrically equivalent reaction.
+    """
+    if file == 'michael': return s
+    elif file in ['e2_lccsd', 'e2_mp2', 'sn2_lccsd', 'sn2_mp2']: return s[[1, 0, 3, 2, 4, 5]]
+    elif file == 'vaska': return s[[0, 1, 3, 2]]
