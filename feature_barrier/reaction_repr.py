@@ -58,6 +58,7 @@ def generate_data(barriers_groups_file, mkswp):
 			to_remove.append(i)
 	for index in reversed(to_remove):
 		known_mols.pop(index)
+		low_barriers.pop(index)
 		barriers.pop(index)
 	mols = []
 	group_counts = [len(unique_groups[g]) for g in unique_groups.keys()]
